@@ -1,0 +1,7 @@
+{
+  "name": "ai-image-api",
+  "version": "1.0.0",
+  "dependencies": {
+    "replicate": "^1.0.0"
+  }
+}
