@@ -5,7 +5,7 @@ const replicate = new Replicate({
 });
 
 export default async function handler(req, res) {
-  // CORS taake aapki website se connect ho sake
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,POST');
@@ -20,24 +20,28 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image, prompt } = req.body; // Image base64 format mein aayegi
+    const { prompt } = req.body; 
 
-    if (!image || !prompt) {
-      return res.status(400).json({ error: 'Image aur prompt dono zaruri hain' });
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt zaruri hai!' });
     }
 
-    // AI ko instruct-pix2pix model bhej rahe hain
-    const input = { image: image, prompt: prompt };
+    // AI ko FLUX.2 Pro model bhej rahe hain
+    const input = { prompt: prompt };
     
     const output = await replicate.run(
-      "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
+      "black-forest-labs/flux-2-pro",
       { input }
     );
 
-    // Edited image ka URL nikalna
+    // FLUX ka output URL nikalna
     let finalImageUrl = "";
-    if (Array.isArray(output)) {
-       finalImageUrl = typeof output[0] === 'string' ? output[0] : output[0].url();
+    if (typeof output === 'string') {
+        finalImageUrl = output;
+    } else if (output && typeof output.url === 'function') {
+        finalImageUrl = output.url();
+    } else if (Array.isArray(output)) {
+        finalImageUrl = output[0];
     }
 
     return res.status(200).json({ success: true, edited_image_url: finalImageUrl });
